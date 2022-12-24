@@ -1,0 +1,7 @@
+/build/
+/.config
+/.config.old
+/helloworld_static_kvm*
+/helloworld_static_linuxu*
+/libukstatic_kvm.a
+/libukstatic_linuxu.a

@@ -1,0 +1,37 @@
+UK_WORKDIR ?= $(HOME)/.unikraft
+UK_ROOT ?= $(UK_WORKDIR)/unikraft
+UK_LIBS ?= $(UK_WORKDIR)/libs
+LIBS :=
+
+.PHONY: all clean
+
+all: helloworld_static_kvm
+
+helloworld_static_kvm: helloworld_static_kvm.o
+	gcc -L. -nostdinc -nostdlib \
+		-no-pie \
+		-Wl,--omagic \
+		-Wl,--build-id=none \
+		-Wl,-dT,build/libkvmplat/link64.lds \
+		-Wl,-T,$(UK_ROOT)/lib/uksched/extra.ld \
+		-o $@ \
+		$<
+
+helloworld_static_kvm.o: helloworld_static_kvm.ld.o
+	objcopy -w -G kvmos_* -G _libkvmplat_entry $< $@
+
+helloworld_static_kvm.ld.o: libukstatic_kvm.a
+	gcc -L. -nostdinc -nostdlib \
+		-no-pie \
+		-Wl,-r \
+		-Wl,-d \
+		-o $@ \
+		build/apphelloworld.o \
+		-lukstatic_kvm
+
+libukstatic_kvm.a: build/
+	ar rc $@ $$(find $< -mindepth 1 -maxdepth 1 -type f -regex '.*/lib[^\.]+.o$$')
+
+clean:
+	-rm -f libukstatic_kvm.a
+	-rm -f helloworld_static_kvm helloworld_static_kvm.o helloworld_static_kvm.ld.o

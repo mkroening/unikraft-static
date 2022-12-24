@@ -1,0 +1,10 @@
+---
+specification: '0.5'
+name: helloworld
+unikraft:
+  version: 0.11.0
+targets:
+  - architecture: x86_64
+    platform: linuxu
+  - architecture: x86_64
+    platform: kvm

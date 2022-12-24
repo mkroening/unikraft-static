@@ -1,0 +1,28 @@
+UK_WORKDIR ?= $(HOME)/.unikraft
+UK_ROOT ?= $(UK_WORKDIR)/unikraft
+UK_LIBS ?= $(UK_WORKDIR)/libs
+LIBS :=
+
+.PHONY: all clean
+
+all: helloworld_static_linuxu
+
+helloworld_static_linuxu: libukstatic_linuxu.a
+	gcc -L. -nostdinc -nostdlib \
+		-no-pie \
+		-Wl,--build-id=none \
+		-Wl,--omagic \
+		-Wl,-e,_liblinuxuplat_start \
+		-Wl,-T,build/liblinuxuplat/link64.lds \
+		-Wl,-T,$(UK_ROOT)/lib/uksched/extra.ld \
+		-Wl,-T,$(UK_ROOT)/lib/vfscore/extra.ld \
+		-o $@ \
+		build/apphelloworld.o \
+		-lukstatic_linuxu
+
+libukstatic_linuxu.a: build/
+	ar rc $@ $$(find $< -mindepth 1 -maxdepth 1 -type f -regex '.*/lib[^\.]+.o$$')
+
+clean:
+	-rm -f libukstatic_linuxu.a
+	-rm -f helloworld_static_linuxu
